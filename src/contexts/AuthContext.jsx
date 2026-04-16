@@ -25,10 +25,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (email, password) => supabase.auth.signInWithPassword({ email, password });
+  const signUp = (email, password) => supabase.auth.signUp({ email, password });
   const logout = () => supabase.auth.signOut();
+  const resetPassword = (email) => supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+
+  const isAdmin = user?.email?.includes('fespeleta');
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAdmin, loading, login, signUp, logout, resetPassword }}>
       {!loading && children}
     </AuthContext.Provider>
   );

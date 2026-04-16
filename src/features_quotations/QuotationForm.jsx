@@ -131,14 +131,14 @@ const ProposalContent = ({ option, formData, calculateTotals, settings, allOptio
                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden' }}>
                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                                          <thead>
+                                           {flights && flights.length > 0 && (<thead>
                                              <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
                                                 <th style={{ padding: '12px 20px', color: '#64748b', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase' }}>FECHA</th>
                                                 <th style={{ padding: '12px 20px', color: '#64748b', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase' }}>VUELO</th>
                                                 <th style={{ padding: '12px 20px', color: '#64748b', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase' }}>TRAMO</th>
                                                 <th style={{ padding: '12px 20px', color: '#64748b', fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', textAlign: 'right' }}>HORARIOS</th>
                                              </tr>
-                                          </thead>
+                                              </thead>)}
                                           <tbody>
                                              {flights?.map((f, fi) => (
                                                 <tr key={fi} style={{ borderBottom: fi === flights.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
@@ -151,6 +151,11 @@ const ProposalContent = ({ option, formData, calculateTotals, settings, allOptio
                                           </tbody>
                                        </table>
                                     </div>
+                                    {s.data.image && (
+                                       <div style={{ marginTop: '15px' }}>
+                                          <img src={s.data.image} style={{ maxWidth: '100%', width: 'auto', display: 'block', margin: '0 auto', borderRadius: '16px', border: '1px solid #e2e8f0' }} alt="Detalle vuelo" />
+                                       </div>
+                                    )}
                                     {s.data.equipaje && (
                                        <div style={{ marginTop: '10px', backgroundColor: '#fff', padding: '10px 20px', borderRadius: '12px', border: '1px dashed #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                           <Briefcase size={12} color="#64748b" />
@@ -713,6 +718,20 @@ const QuotationForm = ({ quoteId, onBack }) => {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  const handlePasteImage = (e, serviceIdx) => {
+    const items = e.clipboardData.items;
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const blob = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          updateService(serviceIdx, 'image', event.target.result);
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+  };
+
   const currentOption = formData.options && formData.options.length > 0 ? formData.options[activeOptionIdx] : INITIAL_OPTION;
   const currentStats = calculateTotals(currentOption);
 
@@ -1060,8 +1079,25 @@ const QuotationForm = ({ quoteId, onBack }) => {
                   {s.type === 'vuelo' && (
                      <>
                         <div className="grid-cols-1">
-                           <textarea value={s.data.pnr_raw || ''} onChange={(e) => updateService(idx, 'pnr_raw', e.target.value)} placeholder="Pegar PNR aquí..." style={{ minHeight: '100px', fontSize: '11px', fontFamily: 'monospace', backgroundColor: '#f8fafc', padding: '15px' }} />
+                           <textarea 
+                             value={s.data.pnr_raw || ''} 
+                             onChange={(e) => updateService(idx, 'pnr_raw', e.target.value)} 
+                             onPaste={(e) => handlePasteImage(e, idx)}
+                             placeholder="Pegar PNR aquí... (O pegar imagen con Ctrl+V)" 
+                             style={{ minHeight: '100px', fontSize: '11px', fontFamily: 'monospace', backgroundColor: '#f8fafc', padding: '15px' }} 
+                           />
                         </div>
+                        {s.data.image && (
+                          <div style={{ marginTop: '15px', position: 'relative', display: 'inline-block' }}>
+                             <img src={s.data.image} style={{ maxWidth: '100%', height: 'auto', borderRadius: '12px', border: '1px solid #e2e8f0' }} alt="Vuelo" />
+                             <button 
+                               onClick={() => updateService(idx, 'image', '')}
+                               style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                             >
+                               <X size={14} />
+                             </button>
+                          </div>
+                        )}
                         <div className="grid-cols-2" style={{ marginTop: '10px' }}>
                            <input value={s.data.equipaje || ''} onChange={(e) => updateService(idx, 'equipaje', e.target.value)} placeholder="Equipaje (Ej: 23kg + Carry-on)..." />
                            <input type="number" placeholder="Costo General (Shared) USD" value={s.data.precio || ''} onChange={(e) => updateService(idx, 'precio', e.target.value)} />

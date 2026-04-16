@@ -133,6 +133,11 @@ const PublicProposal = ({ quoteId }) => {
                                  <div style={{ textAlign: 'right' }}><div style={{ fontSize: '20px', fontWeight: 950 }}>{f.departureTimeFormatted}</div><div style={{ fontSize: '11px', color: '#64748b' }}>Hora Local</div></div>
                               </div>
                            ))}
+                           {s.data.image && (
+                             <div style={{ marginTop: '20px' }}>
+                                <img src={s.data.image} style={{ maxWidth: '100%', width: 'auto', display: 'block', margin: '0 auto', borderRadius: '24px', border: '1px solid #f1f5f9' }} alt="Detalle Vuelo" />
+                             </div>
+                           )}
                         </div>
                      );
                   })()}

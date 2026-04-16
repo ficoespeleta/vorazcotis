@@ -1,11 +1,17 @@
 import { createClient } from '../utils/supabase/client';
 const supabase = createClient();
 
-export const getQuotations = async () => {
-  const { data, error } = await supabase
+export const getQuotations = async (userId = null) => {
+  let query = supabase
     .from('quotations')
     .select('*')
     .order('created_at', { ascending: false });
+    
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data, error } = await query;
     
   if (error) throw error;
   return data;

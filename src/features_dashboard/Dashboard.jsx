@@ -2,15 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { getQuotations, createQuotation, deleteQuotation } from '../supabase/quotations';
 import { Plus, Search, Edit2, Copy, Trash2, MapPin, User, ChevronRight } from 'lucide-react';
 import { formatCurrency } from '../utils/utils';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = ({ onEdit, onNew }) => {
+  const { user, isAdmin } = useAuth();
   const [quotations, setQuotations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchQuotes = async () => {
     try {
-      const data = await getQuotations();
+      // Si eres admin, pasamos null para ver todo. Si no, pasamos tu user.id
+      const data = await getQuotations(isAdmin ? null : user?.id);
       setQuotations(data);
     } catch (e) {
       console.error("Error fetching quotes:", e);
@@ -29,7 +32,8 @@ const Dashboard = ({ onEdit, onNew }) => {
       const newQuote = { 
         ...rest, 
         customerName: `${quote.customerName} (Copia)`,
-        created_at: new Date().toISOString() 
+        created_at: new Date().toISOString(),
+        user_id: user?.id // Asociamos la copia al usuario actual
       };
       await createQuotation(newQuote);
       fetchQuotes();
@@ -51,15 +55,18 @@ const Dashboard = ({ onEdit, onNew }) => {
 
   const filteredQuotes = quotations.filter(q => 
     q.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    q.destination?.toLowerCase().includes(searchTerm.toLowerCase())
+    q.destination?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    q.tripName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className="animate-fade-in">
       <header className="section-header">
         <div>
-           <h1>Mis Cotizaciones</h1>
-           <p className="tagline">Agilizá tus propuestas con el estilo Voraz.</p>
+           <h1>{isAdmin ? 'Panel Central (Master)' : 'Mis Cotizaciones'}</h1>
+           <p className="tagline">
+             {isAdmin ? 'Visualizando todas las operaciones de Voraz.' : `Agilizá tus propuestas, ${user?.email?.split('@')[0]}.`}
+           </p>
         </div>
         <button className="btn btn-primary" onClick={onNew}>
           <Plus size={20} />

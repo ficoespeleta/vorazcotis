@@ -3,7 +3,7 @@ import { Home, PlusCircle, FileText, Settings, LogOut, Briefcase, User } from 'l
 import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar = ({ currentView, setCurrentView }) => {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -19,6 +19,20 @@ const Sidebar = ({ currentView, setCurrentView }) => {
           <Briefcase size={20} />
         </div>
         <span>Voraz</span>
+        {isAdmin && (
+          <span style={{ 
+            fontSize: '10px', 
+            backgroundColor: 'var(--color-accent-gold)', 
+            color: 'var(--color-brand)', 
+            padding: '2px 6px', 
+            borderRadius: '4px',
+            marginLeft: '8px',
+            fontWeight: 'bold',
+            textTransform: 'uppercase'
+          }}>
+            Master
+          </span>
+        )}
       </div>
       
       <nav style={{ flex: 1 }}>
